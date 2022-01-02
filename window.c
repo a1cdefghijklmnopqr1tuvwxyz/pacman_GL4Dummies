@@ -26,8 +26,9 @@ static void keyu(int keycode);
 static void sortie(void);
 
 /*!\brief une surface représentant un cube */
-static extern surface_t * mk_sphere(int longitudes, int latitudes) = NULL;
-static float _sphereSize = 4.0f;
+static surface_t * _cube = NULL;
+static surface_t * _sphere = NULL;
+static float _cubeSize = 4.0f;
 
 /* des variable d'états pour activer/désactiver des options de rendu */
 static int _use_tex = 1, _use_color = 1, _use_lighting = 1;
@@ -35,32 +36,31 @@ static int _use_tex = 1, _use_color = 1, _use_lighting = 1;
 
 /* on créé une grille de positions où il y aura des cubes */
 static int _grille[] = {
-
+  
    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
    1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-   1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1,
-   1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1,
+   1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1,
+   1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1,
    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
    1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1,
    1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
    1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1,
    1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1,
-   1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1,
-   1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1,
-   1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1,
-   1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
-   1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1,
+   1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1,
+   1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1,
+   1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1,
+   1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1,
+   1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1,
    1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1,
-   1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1,
-   1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1,
-   1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1,
-   1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1,
+   1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1,
+   1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+   1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1,
    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
   
   
 };
-static int _grilleW = 21;
+static int _grilleW = 20;
 static int _grilleH = 20;
 
 typedef struct perso_t perso_t;
@@ -68,7 +68,7 @@ struct perso_t {
   float x, y, z;
 };
 
-perso_t _hero = { -10.0f, 0.0f, 0.0f };
+perso_t _perso = { -10.0f, 0.0f, 0.0f };
 
 enum {
   VK_RIGHT = 0,
@@ -87,8 +87,8 @@ int _vkeyboard[VK_SIZEOF] = {0, 0, 0, 0};
 int main(int argc, char ** argv) {
   /* tentative de création d'une fenêtre pour GL4Dummies */
   if(!gl4duwCreateWindow(argc, argv, /* args du programme */
-			 "Pacman", /* titre */
-			 10, 10, 800, 600, /* x, y, largeur, heuteur */
+			 "pacman", /* titre */
+			 10, 10, 800, 800, /* x, y, largeur, heuteur */
 			 GL4DW_SHOWN) /* état visible */) {
     /* ici si échec de la création souvent lié à un problème d'absence
      * de contexte graphique ou d'impossibilité d'ouverture d'un
@@ -123,19 +123,23 @@ void init(void) {
   /* Pour forcer la désactivation de la synchronisation verticale */
   SDL_GL_SetSwapInterval(1);
   /* on créé le cube */
-  _sphere   =   mk_sphere(10,10);     //fonction    /* ça fait 2x6 triangles      */
+  _cube = mk_cube();
+  _sphere   =   mk_sphere(10, 10);         /* ça fait 2x6 triangles      */
   /* on change la couleur */
-  _sphere -> dcolor = b; 
+  _sphere->dcolor = b; 
   /* on leur rajoute la texture */
   id = get_texture_from_BMP("images/tex.bmp");
   set_texture_id(  _sphere, id);
+  set_texture_id(  _cube, id);
   /* si _use_tex != 0, on active l'utilisation de la texture */
   if(_use_tex) {
     enable_surface_option(  _sphere, SO_USE_TEXTURE);
+    enable_surface_option(  _cube, SO_USE_TEXTURE);
   }
   /* si _use_lighting != 0, on active l'ombrage */
   if(_use_lighting) {
     enable_surface_option(  _sphere, SO_USE_LIGHTING);
+    enable_surface_option(  _cube, SO_USE_LIGHTING);
   }
   /* mettre en place la fonction à appeler en cas de sortie */
   atexit(sortie);
@@ -152,24 +156,24 @@ void idle(void) {
   t0 = t;
   
   if(_vkeyboard[VK_RIGHT])
-    _hero.x += 2.0f * dt;
+    _perso.x += 2.0f * dt;
   if(_vkeyboard[VK_UP])
-    _hero.z -= 2.0f * dt;
+    _perso.z -= 2.0f * dt;
   if(_vkeyboard[VK_LEFT])
-    _hero.x -= 2.0f * dt;
+    _perso.x -= 2.0f * dt;
   if(_vkeyboard[VK_DOWN])
-    _hero.z += 2.0f * dt;
+    _perso.z += 2.0f * dt;
 
   int li, col;
-  col = (int)((_hero.x + _sphereSize * _grilleW /2) / _sphereSize);
-  li  = (int)((_hero.z + _sphereSize * _grilleH /2) / _sphereSize);
+  col = (int)((_perso.x + _cubeSize * _grilleW /2) / _cubeSize);
+  li  = (int)((_perso.z + _cubeSize * _grilleH /2) / _cubeSize);
   printf("col = %d, li = %d\n", col, li);
 }
 
 
 /*!\brief la fonction appelée à chaque display. */
 void draw(void) {
-  vec4 r = {1, 0, 0, 1}, b = {0, 0, 1, 1};
+  vec4 r = {1, 0, 0, 1}, b = {0, 0, 1, 1}, e = {1, 1, 0, 1};
   /* on va récupérer le delta-temps */
   static double t0 = 0.0; // le temps à la frame précédente
   double t, dt;
@@ -191,13 +195,13 @@ void draw(void) {
   /* charger la matrice identité dans model-view */
   MIDENTITY(model_view_matrix);
   /* on place la caméra en arrière-haut, elle regarde le centre de la scène */
-  lookAt(model_view_matrix, 0, 25 + 50 /* * fabs(cos(a * M_PI / 180.0f)) */, 5, 0, 0, 0, 0, 0, -1);
+  lookAt(model_view_matrix, 0, 150 + 20 /* * fabs(cos(a * M_PI / 180.0f)) */, 20, 0, 20, 20, 0, 10, -1);
 
   /* pour centrer la grille par rapport au monde */
-  float cX = _sphereSize * _grilleW / 2.0f;
-  float cZ = _sphereSize * _grilleH / 2.0f;
+  float cX = -_cubeSize * _grilleW / 2.5f;
+  float cZ = -_cubeSize * _grilleH / 2.5f;
   /* on change la couleur */
-  _sphere->dcolor = b; 
+  _cube->dcolor = b; //color
   /* pour toutes les cases de la grille, afficher un cube quand il y a
    * un 1 dans la grille */
   for(int i = 0; i < _grilleW; ++i) {
@@ -208,19 +212,19 @@ void draw(void) {
 	/* pour tourner tout le plateau */
 	//rotate(nmv, a, 0.0f, 1.0f, 0.0f);
 	/* pour convertir les coordonnées i,j de la grille en x,z du monde */
-	translate(nmv, _sphereSize * j + cX, 0.0f, _sphereSize * i + cZ);
-	scale(nmv, _sphereSize / 2.0f, _sphereSize / 2.0f, _sphereSize / 2.0f);
-	transform_n_rasterize(_sphere, nmv, projection_matrix);
+	translate(nmv, _cubeSize * j + cX, 0.0f, _cubeSize * i + cZ);
+	scale(nmv, _cubeSize / 2.0f, _cubeSize / 2.0f, _cubeSize / 2.0f);
+	transform_n_rasterize(_cube, nmv, projection_matrix);
       }
     }
   }
   /* on dessine le perso _hero */
   /* on change la couleur */
-  _sphere>dcolor = r; 
+  _sphere->dcolor = e; 
   memcpy(nmv, model_view_matrix, sizeof nmv);
-  translate(nmv, _hero.x, _hero.y, _hero.z);
-  scale(nmv, _sphereSize / 2.0f, _sphereSize / 2.0f, _sphereSize / 2.0f);
-  transform_n_pacman(_sphere, nmv, projection_matrix);
+  translate(nmv, _perso.x, _perso.y, _perso.z);
+  scale(nmv,  1.8f, 1.8f, 1.8f);
+  transform_n_rasterize(_sphere, nmv, projection_matrix);
 
 
   /* déclarer qu'on a changé des pixels du screen (en bas niveau) */
@@ -291,7 +295,6 @@ void keyu(int keycode) {
   default: break;
   }
 }
-//extern surface_t * mk_sphere(int longitudes, int latitudes);
 
 /*!\brief à appeler à la sortie du programme. */
 void sortie(void) {
@@ -300,11 +303,11 @@ void sortie(void) {
     free_surface(_sphere);
     _sphere = NULL;
   }
+if(_cube) {
+    free_surface(_cube);
+    _cube = NULL;
+  }
   /* libère tous les objets produits par GL4Dummies, ici
    * principalement les screen */
   gl4duClean(GL4DU_ALL);
 }
-
-
-//l'emplacement du perso pour la caméra 
-//lookAt(model_view_matrix, 0, 25, 25, 0, 0, 0, 0, 1, 0);
