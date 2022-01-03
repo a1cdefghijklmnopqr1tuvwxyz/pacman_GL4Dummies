@@ -28,6 +28,7 @@ static void sortie(void);
 /*!\brief une surface représentant un cube */
 static surface_t * _cube = NULL;
 static surface_t * _sphere = NULL;
+static surface_t * _fontome = NULL;
 static float _cubeSize = 4.0f;
 
 /* des variable d'états pour activer/désactiver des options de rendu */
@@ -87,8 +88,8 @@ int _vkeyboard[VK_SIZEOF] = {0, 0, 0, 0};
 int main(int argc, char ** argv) {
   /* tentative de création d'une fenêtre pour GL4Dummies */
   if(!gl4duwCreateWindow(argc, argv, /* args du programme */
-			 "pacman", /* titre */
-			 10, 10, 800, 800, /* x, y, largeur, heuteur */
+			 "Pacman", /* titre */
+			 10, 10, 700, 700, /* x, y, largeur, heuteur */
 			 GL4DW_SHOWN) /* état visible */) {
     /* ici si échec de la création souvent lié à un problème d'absence
      * de contexte graphique ou d'impossibilité d'ouverture d'un
@@ -125,21 +126,25 @@ void init(void) {
   /* on créé le cube */
   _cube = mk_cube();
   _sphere   =   mk_sphere(10, 10);         /* ça fait 2x6 triangles      */
+  _fontome = mk_cube();
   /* on change la couleur */
   _sphere->dcolor = b; 
   /* on leur rajoute la texture */
   id = get_texture_from_BMP("images/tex.bmp");
   set_texture_id(  _sphere, id);
   set_texture_id(  _cube, id);
+  set_texture_id(  _fontome, id);
   /* si _use_tex != 0, on active l'utilisation de la texture */
   if(_use_tex) {
     enable_surface_option(  _sphere, SO_USE_TEXTURE);
     enable_surface_option(  _cube, SO_USE_TEXTURE);
+    enable_surface_option(  _fontome, SO_USE_TEXTURE);
   }
   /* si _use_lighting != 0, on active l'ombrage */
   if(_use_lighting) {
     enable_surface_option(  _sphere, SO_USE_LIGHTING);
     enable_surface_option(  _cube, SO_USE_LIGHTING);
+    enable_surface_option(  _fontome, SO_USE_LIGHTING);
   }
   /* mettre en place la fonction à appeler en cas de sortie */
   atexit(sortie);
@@ -306,6 +311,10 @@ void sortie(void) {
 if(_cube) {
     free_surface(_cube);
     _cube = NULL;
+  }
+  if(_fontome) {
+    free_surface(_fontome);
+    _fontome = NULL;
   }
   /* libère tous les objets produits par GL4Dummies, ici
    * principalement les screen */

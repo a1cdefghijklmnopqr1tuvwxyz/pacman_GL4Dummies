@@ -17,7 +17,7 @@ CPPFLAGS = -I.
 LDFLAGS = -lm
 # définition des fichiers et dossiers
 PACKNAME = sc_00_07
-PROGNAME = rasterizer
+PROGNAME = pacman
 VERSION = 0.1
 distdir = $(PACKNAME)_$(PROGNAME)-$(VERSION)
 HEADERS = rasterize.h
