@@ -32,7 +32,7 @@ static surface_t * _cube2 = NULL;
 
 static surface_t * _sphere = NULL;
 
-static float _cubeSize = 4.0f;
+static float _cubeSize = 5.5f;
 
 /* des variable d'états pour activer/désactiver des options de rendu */
 static int _use_tex = 1, _use_color = 1, _use_lighting = 1;
@@ -93,7 +93,7 @@ int main(int argc, char ** argv) {
   /* tentative de création d'une fenêtre pour GL4Dummies */
   if(!gl4duwCreateWindow(argc, argv, /* args du programme */
 			 "Pacman", /* titre */
-			 10, 10, 700, 700, /* x, y, largeur, heuteur */
+			 10, 10, 500, 500, /* x, y, largeur, heuteur */
 			 GL4DW_SHOWN) /* état visible */) {
     /* ici si échec de la création souvent lié à un problème d'absence
      * de contexte graphique ou d'impossibilité d'ouverture d'un
