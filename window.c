@@ -30,6 +30,10 @@ static surface_t * _cube = NULL;
 
 static surface_t * _cube2 = NULL;
 
+static surface_t * _cube3 = NULL;
+
+static surface_t * _cube4 = NULL;
+
 static surface_t * _sphere = NULL;
 
 static float _cubeSize = 5.5f;
@@ -72,8 +76,11 @@ struct perso_t {
   float x, y, z;
 };
 
-perso_t _perso = { 10.0f, 0.0f, 0.0f };
+perso_t _perso = { 20.0f, 0.0f, 0.0f };
 perso_t _ennemi = { 1.0f, 0.0f, 0.0f }; //l'emplacement
+perso_t _ghost1 = { 5.0f, 0.0f, 0.0f };
+perso_t _ghost2 = { 9.0f, 0.0f, 0.0f };
+
 
 enum {
   VK_RIGHT = 0,
@@ -119,7 +126,7 @@ int main(int argc, char ** argv) {
  * utilisées dans ce code */
 void init(void) {
   GLuint id;
-  vec4 r = {1, 0, 0, 1}, g = {0, 1, 0, 1}, b = {0, 0, 1, 1};
+  vec4 r = {1, 0, 0, 1}, g = {0, 1, 0, 1}, b = {0, 0, 1, 1}, d = {1, 1, 1, 0}, s = {1, 0, 1, 1};
   /* création d'un screen GL4Dummies (texture dans laquelle nous
    * pouvons dessiner) aux dimensions de la fenêtre.  IMPORTANT de
    * créer le screen avant d'utiliser les fonctions liées au
@@ -129,17 +136,23 @@ void init(void) {
   SDL_GL_SetSwapInterval(1);
   /* on créé le cube */
   _cube = mk_cube();
-  _sphere   =   mk_sphere(10, 10);         /* ça fait 2x6 triangles      */
-  _cube2 = mk_cube();
+  _sphere =  mk_sphere(10, 10);         /* ça fait 2x6 triangles      */
+  _cube2 = mk_cube(); //premier ennemi
+  _cube3 = mk_cube(); //second ennemi
+  _cube4 = mk_cube(); //troisiéme ennemi
   /* on change la couleur */
 
   _sphere->dcolor = b; 
   _cube2->dcolor = g;
+  _cube3->dcolor = d;
+  _cube4->dcolor = s;
   /* on leur rajoute la texture */
   id = get_texture_from_BMP("images/tex.bmp");
   set_texture_id(  _sphere, id);
   set_texture_id(  _cube, id);
   set_texture_id(  _cube2, id);
+  set_texture_id(  _cube3, id);
+  set_texture_id(  _cube4, id);
 
   /* si _use_tex != 0, on active l'utilisation de la texture */
 
@@ -147,13 +160,16 @@ void init(void) {
     enable_surface_option(  _sphere, SO_USE_TEXTURE);
     enable_surface_option(  _cube, SO_USE_TEXTURE);
     enable_surface_option(  _cube2, SO_USE_TEXTURE);
-
+    enable_surface_option(  _cube3, SO_USE_TEXTURE);
+    enable_surface_option(  _cube4, SO_USE_TEXTURE);
   }
   /* si _use_lighting != 0, on active l'ombrage */
   if(_use_lighting) {
     enable_surface_option(  _sphere, SO_USE_LIGHTING);
     enable_surface_option(  _cube, SO_USE_LIGHTING);
     enable_surface_option(  _cube2, SO_USE_LIGHTING);
+    enable_surface_option(  _cube3, SO_USE_LIGHTING);
+    enable_surface_option(  _cube4, SO_USE_LIGHTING);
   }
 
   /* mettre en place la fonction à appeler en cas de sortie */
@@ -189,7 +205,7 @@ void idle(void) {
 
 /*!\brief la fonction appelée à chaque display. */
 void draw(void) {
-  vec4 r = {1, 0, 0, 1}, b = {0, 0, 1, 1}, e = {1, 1, 0, 1};
+  vec4 r = {1, 0, 0, 1}, b = {0, 0, 1, 1}, e = {1, 1, 0, 1}, v ={1, 0, 0, 1};
   /* on va récupérer le delta-temps */
   static double t0 = 0.0; // le temps à la frame précédente
   double t, dt;
@@ -234,6 +250,13 @@ void draw(void) {
       }
     }
   }
+ /* else{
+
+  for(int i = 0; i < _grilleW; ++i) {
+    for(int j = 0; j < _grilleH; ++j) {
+      if(_grille[i * _grilleW + j] == 0) {
+
+*/
   /* on dessine le perso _hero */
   /* on change la couleur */
   _sphere->dcolor = e; 
@@ -244,9 +267,18 @@ void draw(void) {
 
   memcpy(nmv, model_view_matrix, sizeof nmv);
   translate(nmv, _ennemi.x, _ennemi.y, _ennemi.z);
-  scale(nmv,  1.4f, 1.4f, 1.4f); //size
+  scale(nmv,  1.5f, 1.5f, 1.5f); //size
   transform_n_rasterize(_cube2, nmv, projection_matrix);
+  
+  memcpy(nmv, model_view_matrix, sizeof nmv);
+  translate(nmv, _ghost1.x, _ghost1.y, _ghost1.z);
+  scale(nmv,  1.5f, 1.5f, 1.5f); //size
+  transform_n_rasterize(_cube3, nmv, projection_matrix);
 
+   memcpy(nmv, model_view_matrix, sizeof nmv);
+  translate(nmv, _ghost2.x, _ghost2.y, _ghost2.z);
+  scale(nmv,  1.5f, 1.5f, 1.5f); //size
+  transform_n_rasterize(_cube4, nmv, projection_matrix);
 
   /* déclarer qu'on a changé des pixels du screen (en bas niveau) */
   gl4dpScreenHasChanged();
@@ -332,6 +364,16 @@ if(_cube) {
 if(_cube2) {
     free_surface(_cube2);
     _cube2 = NULL;
+  }
+
+if(_cube3) {
+    free_surface(_cube3);
+    _cube3 = NULL;
+  }
+
+if(_cube4) {
+    free_surface(_cube4);
+    _cube4 = NULL;
   }
 
   /* libère tous les objets produits par GL4Dummies, ici
