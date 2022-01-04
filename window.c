@@ -27,8 +27,11 @@ static void sortie(void);
 
 /*!\brief une surface représentant un cube */
 static surface_t * _cube = NULL;
+
+static surface_t * _cube2 = NULL;
+
 static surface_t * _sphere = NULL;
-static surface_t * _fontome = NULL;
+
 static float _cubeSize = 4.0f;
 
 /* des variable d'états pour activer/désactiver des options de rendu */
@@ -69,7 +72,8 @@ struct perso_t {
   float x, y, z;
 };
 
-perso_t _perso = { -10.0f, 0.0f, 0.0f };
+perso_t _perso = { 10.0f, 0.0f, 0.0f };
+perso_t _ennemi = { 1.0f, 0.0f, 0.0f }; //l'emplacement
 
 enum {
   VK_RIGHT = 0,
@@ -126,26 +130,32 @@ void init(void) {
   /* on créé le cube */
   _cube = mk_cube();
   _sphere   =   mk_sphere(10, 10);         /* ça fait 2x6 triangles      */
-  _fontome = mk_cube();
+  _cube2 = mk_cube();
   /* on change la couleur */
+
   _sphere->dcolor = b; 
+  _cube2->dcolor = g;
   /* on leur rajoute la texture */
   id = get_texture_from_BMP("images/tex.bmp");
   set_texture_id(  _sphere, id);
   set_texture_id(  _cube, id);
-  set_texture_id(  _fontome, id);
+  set_texture_id(  _cube2, id);
+
   /* si _use_tex != 0, on active l'utilisation de la texture */
+
   if(_use_tex) {
     enable_surface_option(  _sphere, SO_USE_TEXTURE);
     enable_surface_option(  _cube, SO_USE_TEXTURE);
-    enable_surface_option(  _fontome, SO_USE_TEXTURE);
+    enable_surface_option(  _cube2, SO_USE_TEXTURE);
+
   }
   /* si _use_lighting != 0, on active l'ombrage */
   if(_use_lighting) {
     enable_surface_option(  _sphere, SO_USE_LIGHTING);
     enable_surface_option(  _cube, SO_USE_LIGHTING);
-    enable_surface_option(  _fontome, SO_USE_LIGHTING);
+    enable_surface_option(  _cube2, SO_USE_LIGHTING);
   }
+
   /* mettre en place la fonction à appeler en cas de sortie */
   atexit(sortie);
 }
@@ -168,6 +178,7 @@ void idle(void) {
     _perso.x -= 2.0f * dt;
   if(_vkeyboard[VK_DOWN])
     _perso.z += 2.0f * dt;
+
 
   int li, col;
   col = (int)((_perso.x + _cubeSize * _grilleW /2) / _cubeSize);
@@ -230,6 +241,11 @@ void draw(void) {
   translate(nmv, _perso.x, _perso.y, _perso.z);
   scale(nmv,  1.8f, 1.8f, 1.8f);
   transform_n_rasterize(_sphere, nmv, projection_matrix);
+
+  memcpy(nmv, model_view_matrix, sizeof nmv);
+  translate(nmv, _ennemi.x, _ennemi.y, _ennemi.z);
+  scale(nmv,  1.4f, 1.4f, 1.4f); //size
+  transform_n_rasterize(_cube2, nmv, projection_matrix);
 
 
   /* déclarer qu'on a changé des pixels du screen (en bas niveau) */
@@ -308,14 +324,16 @@ void sortie(void) {
     free_surface(_sphere);
     _sphere = NULL;
   }
+
 if(_cube) {
     free_surface(_cube);
     _cube = NULL;
   }
-  if(_fontome) {
-    free_surface(_fontome);
-    _fontome = NULL;
+if(_cube2) {
+    free_surface(_cube2);
+    _cube2 = NULL;
   }
+
   /* libère tous les objets produits par GL4Dummies, ici
    * principalement les screen */
   gl4duClean(GL4DU_ALL);
