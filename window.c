@@ -40,32 +40,6 @@ static surface_t * _sphere = NULL;
 
 static float _cubeSize = 5.5f;
 
-double Bonnussx[249];
-double Bonnussy[249];
-
-int Pacmanspeed = 1;
-int speed = 1;
-int level = 1;
-
-void restart(){
-  int i;
-  Pacmanspeed = 1;
-  if (level == 1) {
-    speed = 1;
-    scores = 0;
-  }
-  else{
-    speed += 1;
-  }
-  if(speed == 4){
-    speed = 4;
-  }
-  for( i = 0; i < 249; i++){
-    Bonnussx[i] = 0.0;
-    Bonnussy[i] = 0.0;
-  }
-}
-
 /* des variable d'états pour activer/désactiver des options de rendu */
 static int _use_tex = 1, _use_color = 1, _use_lighting = 1;
 
@@ -261,7 +235,7 @@ void draw(void) {
   /* charger la matrice identité dans model-view */
   MIDENTITY(model_view_matrix);
   /* on place la caméra en arrière-haut, elle regarde le centre de la scène */
-  lookAt(model_view_matrix, /*-30, 50, 20, 0, 0, 0, 0, 1, 0);*/0, 150 + 20  fabs(cos(a * M_PI / 180.0f)) , 20, 0, 20, 20, 0, 10, -1);
+  lookAt(model_view_matrix, 0, 150 + 20 /* * fabs(cos(a * M_PI / 180.0f)) */, 20, 0, 20, 20, 0, 10, -1);
 
   /* pour centrer la grille par rapport au monde */
   float cX = -_cubeSize * _grilleW / 2.5f;
@@ -274,7 +248,7 @@ void draw(void) {
     for(int j = 0; j < _grilleH; ++j) {
       if(_grille[i * _grilleW + j] == 1) {
 
-  
+
 	/* copie model_view_matrix dans nmv */
 	memcpy(nmv, model_view_matrix, sizeof nmv);
 	/* pour tourner tout le plateau */
@@ -286,21 +260,12 @@ void draw(void) {
       }
     }
   }
-//deuxieme sphere
-    for(int i = 0; i < _grilleW; ++i) {
+  /*else{
+
+  for(int i = 0; i < _grilleW; ++i) {
     for(int j = 0; j < _grilleH; ++j) {
       if(_grille[i * _grilleW + j] == 0) {
-
-  memcpy(nmv, model_view_matrix, sizeof nmv);
-	
-	translate(nmv, _cubeSize * j + cX, 0.0f, _cubeeSize * i + cZ);
-	scale(nmv, _cubeSize / 2.0f, _cubeSize / 2.0f, _cubeSize / 2.0f);
-	transform_n_rasterize(_cube, nmv, projection_matrix);
-
-      }
-    }
-  }
-
+*/
 */
   /* on dessine le perso _hero */
   /* on change la couleur */
