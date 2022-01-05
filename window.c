@@ -1,4 +1,4 @@
-/*!\file window.c 
+*!\file window.c 
  * \brief Utilisation du raster DIY comme pipeline de rendu 3D. Cet
  * exemple montre l'affichage d'une grille de cubes.
  * \author Farès BELHADJ, amsi@up8.edu
@@ -261,7 +261,6 @@ void draw(void) {
     }
   }
   /*else{
-
   for(int i = 0; i < _grilleW; ++i) {
     for(int j = 0; j < _grilleH; ++j) {
       if(_grille[i * _grilleW + j] == 0) {
