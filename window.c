@@ -93,7 +93,7 @@ enum {
   VK_UP,
   VK_LEFT,
   VK_DOWN,
-  /* toujours à la fin */
+
   VK_SIZEOF
 };
 
@@ -148,7 +148,8 @@ void init(void) {
   _cube3 = mk_cube(); //second ennemi
   _cube4 = mk_cube(); //troisiéme ennemi
   _cube5 = mk_cube(); //quatriéme ennemi
-  _sphere2 =  mk_piece(9, 9);
+  _piece =  mk_sphere(5, 5);
+
   /* on change la couleur */
 
   _sphere->dcolor = b; 
@@ -292,24 +293,28 @@ void draw(void) {
   _sphere->dcolor = e; 
   memcpy(nmv, model_view_matrix, sizeof nmv);
   translate(nmv, _perso.x, _perso.y, _perso.z);
-  scale(nmv,  1.8f, 1.8f, 1.8f);
+  scale(nmv,  2.0f, 2.0f, 2.0f);
   transform_n_rasterize(_sphere, nmv, projection_matrix);
 
+/* on dessine le ghost _ennemi*/
   memcpy(nmv, model_view_matrix, sizeof nmv);
   translate(nmv, _ennemi.x, _ennemi.y, _ennemi.z);
   scale(nmv,  1.5f, 1.5f, 1.5f); //size
   transform_n_rasterize(_cube2, nmv, projection_matrix);
-  
+
+  /* on dessine le ghost2 _ghost1*/
   memcpy(nmv, model_view_matrix, sizeof nmv);
   translate(nmv, _ghost1.x, _ghost1.y, _ghost1.z);
   scale(nmv,  1.5f, 1.5f, 1.5f); //size
   transform_n_rasterize(_cube3, nmv, projection_matrix);
 
+  /*on dessine le ghost3 _ghost2*/
    memcpy(nmv, model_view_matrix, sizeof nmv);
   translate(nmv, _ghost2.x, _ghost2.y, _ghost2.z);
   scale(nmv,  1.5f, 1.5f, 1.5f); //size
   transform_n_rasterize(_cube4, nmv, projection_matrix);
 
+/*on dessine le ghost4 _ghost3*/
    memcpy(nmv, model_view_matrix, sizeof nmv);
   translate(nmv, _ghost3.x, _ghost3.y, _ghost3.z);
   scale(nmv,  1.5f, 1.5f, 1.5f); //size
@@ -386,36 +391,37 @@ void keyu(int keycode) {
 
 /*!\brief à appeler à la sortie du programme. */
 void sortie(void) {
-  /* on libère le cube */
+  // on libère la sphere 
   if(_sphere) {
     free_surface(_sphere);
     _sphere = NULL;
   }
-
+//on libére le cube
 if(_cube) {
     free_surface(_cube);
     _cube = NULL;
   }
+//on libére cube2
 if(_cube2) {
     free_surface(_cube2);
     _cube2 = NULL;
   }
-
+//on libére cube3
 if(_cube3) {
     free_surface(_cube3);
     _cube3 = NULL;
   }
-
+//on libére cube4
 if(_cube4) {
     free_surface(_cube4);
     _cube4 = NULL;
   }
-
+//on libére cube5
 if(_cube5) {
     free_surface(_cube5);
     _cube5 = NULL;
   }
-
+//on libére piece
 if(_piece) {
     free_surface(_piece);
     _piece = NULL;
