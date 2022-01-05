@@ -1,4 +1,4 @@
-*!\file window.c 
+/*!\file window.c 
  * \brief Utilisation du raster DIY comme pipeline de rendu 3D. Cet
  * exemple montre l'affichage d'une grille de cubes.
  * \author Farès BELHADJ, amsi@up8.edu
@@ -38,6 +38,8 @@ static surface_t * _cube5 = NULL;
 
 static surface_t * _sphere = NULL;
 
+static surface_t * _piece = NULL;
+
 static float _cubeSize = 5.5f;
 
 /* des variable d'états pour activer/désactiver des options de rendu */
@@ -67,9 +69,10 @@ static int _grille[] = {
    1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1,
    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-  
-  
+
+
 };
+
 static int _grilleW = 20;
 static int _grilleH = 20;
 
@@ -79,7 +82,7 @@ struct perso_t {
 };
 
 perso_t _perso = { 20.0f, 0.0f, 0.0f };
-perso_t _ennemi = { 1.0f, 0.0f, 0.0f }; //l'emplacement
+perso_t _ennemi = { 1.0f, 0.0f, 0.0f };
 perso_t _ghost1 = { 5.0f, 0.0f, 0.0f };
 perso_t _ghost2 = { 9.0f, 0.0f, 0.0f };
 perso_t _ghost3 = { -3.0f, 0.0f, 0.0f };
@@ -129,7 +132,8 @@ int main(int argc, char ** argv) {
  * utilisées dans ce code */
 void init(void) {
   GLuint id;
-  vec4 r = {1, 0, 0, 1}, g = {0, 1, 0, 1}, b = {0, 0, 1, 1}, d = {1, 1, 1, 0}, s = {1, 0, 1, 1}, m = {1.0f, 0.0f, 0.0f, 0.0f};
+  vec4 r = {1, 0, 0, 1}, g = {0, 1, 0, 1}, b = {0, 0, 1, 1}, d = {1, 1, 1, 0},
+   s = {1, 0, 1, 1}, m = {1.0f, 0.0f, 0.0f, 0.0f};
   /* création d'un screen GL4Dummies (texture dans laquelle nous
    * pouvons dessiner) aux dimensions de la fenêtre.  IMPORTANT de
    * créer le screen avant d'utiliser les fonctions liées au
@@ -144,6 +148,7 @@ void init(void) {
   _cube3 = mk_cube(); //second ennemi
   _cube4 = mk_cube(); //troisiéme ennemi
   _cube5 = mk_cube(); //quatriéme ennemi
+  _sphere2 =  mk_piece(9, 9);
   /* on change la couleur */
 
   _sphere->dcolor = b; 
@@ -151,6 +156,7 @@ void init(void) {
   _cube3->dcolor = d;
   _cube4->dcolor = s;
   _cube5->dcolor = m;
+
   /* on leur rajoute la texture */
   id = get_texture_from_BMP("images/tex.bmp");
   set_texture_id(  _sphere, id);
@@ -159,6 +165,7 @@ void init(void) {
   set_texture_id(  _cube3, id);
   set_texture_id(  _cube4, id);
   set_texture_id(  _cube5, id);
+  set_texture_id(  _piece, id);
 
   /* si _use_tex != 0, on active l'utilisation de la texture */
 
@@ -169,6 +176,7 @@ void init(void) {
     enable_surface_option(  _cube3, SO_USE_TEXTURE);
     enable_surface_option(  _cube4, SO_USE_TEXTURE);
     enable_surface_option(  _cube5, SO_USE_TEXTURE);
+    enable_surface_option(  _piece, SO_USE_TEXTURE);
   }
   /* si _use_lighting != 0, on active l'ombrage */
   if(_use_lighting) {
@@ -178,6 +186,7 @@ void init(void) {
     enable_surface_option(  _cube3, SO_USE_LIGHTING);
     enable_surface_option(  _cube4, SO_USE_LIGHTING);
     enable_surface_option(  _cube5, SO_USE_LIGHTING);
+    enable_surface_option(  _piece, SO_USE_LIGHTING);
   }
 
   /* mettre en place la fonction à appeler en cas de sortie */
@@ -234,7 +243,7 @@ void draw(void) {
   MFRUSTUM(projection_matrix, -0.05f, 0.05f, -0.05f, 0.05f, 0.1f, 1000.0f);
   /* charger la matrice identité dans model-view */
   MIDENTITY(model_view_matrix);
-  /* on place la caméra en arrière-haut, elle regarde le centre de la scène */
+  /* on place la caméra ainsi */
   lookAt(model_view_matrix, 0, 150 + 20 /* * fabs(cos(a * M_PI / 180.0f)) */, 20, 0, 20, 20, 0, 10, -1);
 
   /* pour centrer la grille par rapport au monde */
@@ -260,11 +269,23 @@ void draw(void) {
       }
     }
   }
-  /*else{
+  /* pour toutes les cases de la grille, afficher une sphere quand il y a
+   * un 0 dans la grille */
+
   for(int i = 0; i < _grilleW; ++i) {
     for(int j = 0; j < _grilleH; ++j) {
       if(_grille[i * _grilleW + j] == 0) {
-*/
+        	/* copie model_view_matrix dans nmv */
+	memcpy(nmv, model_view_matrix, sizeof nmv);
+	/* pour tourner tout le plateau */
+	//rotate(nmv, a, 0.0f, 1.0f, 0.0f);
+	/* pour convertir les coordonnées i,j de la grille en x,z du monde */
+	translate(nmv, _cubeSize * j + cX, 0.0f, _cubeSize * i + cZ);
+	scale(nmv, 1.1f, 1.1f, 1.1f);
+	transform_n_rasterize(_piece, nmv, projection_matrix);
+      }
+    }
+  }
 
   /* on dessine le perso _hero */
   /* on change la couleur */
@@ -393,6 +414,11 @@ if(_cube4) {
 if(_cube5) {
     free_surface(_cube5);
     _cube5 = NULL;
+  }
+
+if(_piece) {
+    free_surface(_piece);
+    _piece = NULL;
   }
 
 
