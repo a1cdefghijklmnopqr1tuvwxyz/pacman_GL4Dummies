@@ -34,9 +34,37 @@ static surface_t * _cube3 = NULL;
 
 static surface_t * _cube4 = NULL;
 
+static surface_t * _cube5 = NULL;
+
 static surface_t * _sphere = NULL;
 
 static float _cubeSize = 5.5f;
+
+double Bonnussx[249];
+double Bonnussy[249];
+
+int Pacmanspeed = 1;
+int speed = 1;
+int level = 1;
+
+void restart(){
+  int i;
+  Pacmanspeed = 1;
+  if (level == 1) {
+    speed = 1;
+    scores = 0;
+  }
+  else{
+    speed += 1;
+  }
+  if(speed == 4){
+    speed = 4;
+  }
+  for( i = 0; i < 249; i++){
+    Bonnussx[i] = 0.0;
+    Bonnussy[i] = 0.0;
+  }
+}
 
 /* des variable d'états pour activer/désactiver des options de rendu */
 static int _use_tex = 1, _use_color = 1, _use_lighting = 1;
@@ -80,6 +108,7 @@ perso_t _perso = { 20.0f, 0.0f, 0.0f };
 perso_t _ennemi = { 1.0f, 0.0f, 0.0f }; //l'emplacement
 perso_t _ghost1 = { 5.0f, 0.0f, 0.0f };
 perso_t _ghost2 = { 9.0f, 0.0f, 0.0f };
+perso_t _ghost3 = { -3.0f, 0.0f, 0.0f };
 
 
 enum {
@@ -126,7 +155,7 @@ int main(int argc, char ** argv) {
  * utilisées dans ce code */
 void init(void) {
   GLuint id;
-  vec4 r = {1, 0, 0, 1}, g = {0, 1, 0, 1}, b = {0, 0, 1, 1}, d = {1, 1, 1, 0}, s = {1, 0, 1, 1};
+  vec4 r = {1, 0, 0, 1}, g = {0, 1, 0, 1}, b = {0, 0, 1, 1}, d = {1, 1, 1, 0}, s = {1, 0, 1, 1}, m = {1.0f, 0.0f, 0.0f, 0.0f};
   /* création d'un screen GL4Dummies (texture dans laquelle nous
    * pouvons dessiner) aux dimensions de la fenêtre.  IMPORTANT de
    * créer le screen avant d'utiliser les fonctions liées au
@@ -140,12 +169,14 @@ void init(void) {
   _cube2 = mk_cube(); //premier ennemi
   _cube3 = mk_cube(); //second ennemi
   _cube4 = mk_cube(); //troisiéme ennemi
+  _cube5 = mk_cube(); //quatriéme ennemi
   /* on change la couleur */
 
   _sphere->dcolor = b; 
   _cube2->dcolor = g;
   _cube3->dcolor = d;
   _cube4->dcolor = s;
+  _cube5->dcolor = m;
   /* on leur rajoute la texture */
   id = get_texture_from_BMP("images/tex.bmp");
   set_texture_id(  _sphere, id);
@@ -153,6 +184,7 @@ void init(void) {
   set_texture_id(  _cube2, id);
   set_texture_id(  _cube3, id);
   set_texture_id(  _cube4, id);
+  set_texture_id(  _cube5, id);
 
   /* si _use_tex != 0, on active l'utilisation de la texture */
 
@@ -162,6 +194,7 @@ void init(void) {
     enable_surface_option(  _cube2, SO_USE_TEXTURE);
     enable_surface_option(  _cube3, SO_USE_TEXTURE);
     enable_surface_option(  _cube4, SO_USE_TEXTURE);
+    enable_surface_option(  _cube5, SO_USE_TEXTURE);
   }
   /* si _use_lighting != 0, on active l'ombrage */
   if(_use_lighting) {
@@ -170,6 +203,7 @@ void init(void) {
     enable_surface_option(  _cube2, SO_USE_LIGHTING);
     enable_surface_option(  _cube3, SO_USE_LIGHTING);
     enable_surface_option(  _cube4, SO_USE_LIGHTING);
+    enable_surface_option(  _cube5, SO_USE_LIGHTING);
   }
 
   /* mettre en place la fonction à appeler en cas de sortie */
@@ -227,7 +261,7 @@ void draw(void) {
   /* charger la matrice identité dans model-view */
   MIDENTITY(model_view_matrix);
   /* on place la caméra en arrière-haut, elle regarde le centre de la scène */
-  lookAt(model_view_matrix, 0, 150 + 20 /* * fabs(cos(a * M_PI / 180.0f)) */, 20, 0, 20, 20, 0, 10, -1);
+  lookAt(model_view_matrix, /*-30, 50, 20, 0, 0, 0, 0, 1, 0);*/0, 150 + 20  fabs(cos(a * M_PI / 180.0f)) , 20, 0, 20, 20, 0, 10, -1);
 
   /* pour centrer la grille par rapport au monde */
   float cX = -_cubeSize * _grilleW / 2.5f;
@@ -239,6 +273,8 @@ void draw(void) {
   for(int i = 0; i < _grilleW; ++i) {
     for(int j = 0; j < _grilleH; ++j) {
       if(_grille[i * _grilleW + j] == 1) {
+
+  
 	/* copie model_view_matrix dans nmv */
 	memcpy(nmv, model_view_matrix, sizeof nmv);
 	/* pour tourner tout le plateau */
@@ -250,11 +286,20 @@ void draw(void) {
       }
     }
   }
- /* else{
-
-  for(int i = 0; i < _grilleW; ++i) {
+//deuxieme sphere
+    for(int i = 0; i < _grilleW; ++i) {
     for(int j = 0; j < _grilleH; ++j) {
       if(_grille[i * _grilleW + j] == 0) {
+
+  memcpy(nmv, model_view_matrix, sizeof nmv);
+	
+	translate(nmv, _cubeSize * j + cX, 0.0f, _cubeeSize * i + cZ);
+	scale(nmv, _cubeSize / 2.0f, _cubeSize / 2.0f, _cubeSize / 2.0f);
+	transform_n_rasterize(_cube, nmv, projection_matrix);
+
+      }
+    }
+  }
 
 */
   /* on dessine le perso _hero */
@@ -279,6 +324,11 @@ void draw(void) {
   translate(nmv, _ghost2.x, _ghost2.y, _ghost2.z);
   scale(nmv,  1.5f, 1.5f, 1.5f); //size
   transform_n_rasterize(_cube4, nmv, projection_matrix);
+
+   memcpy(nmv, model_view_matrix, sizeof nmv);
+  translate(nmv, _ghost3.x, _ghost3.y, _ghost3.z);
+  scale(nmv,  1.5f, 1.5f, 1.5f); //size
+  transform_n_rasterize(_cube5, nmv, projection_matrix);
 
   /* déclarer qu'on a changé des pixels du screen (en bas niveau) */
   gl4dpScreenHasChanged();
@@ -375,6 +425,12 @@ if(_cube4) {
     free_surface(_cube4);
     _cube4 = NULL;
   }
+
+if(_cube5) {
+    free_surface(_cube5);
+    _cube5 = NULL;
+  }
+
 
   /* libère tous les objets produits par GL4Dummies, ici
    * principalement les screen */
