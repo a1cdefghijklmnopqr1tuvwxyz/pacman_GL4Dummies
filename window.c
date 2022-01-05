@@ -266,7 +266,7 @@ void draw(void) {
     for(int j = 0; j < _grilleH; ++j) {
       if(_grille[i * _grilleW + j] == 0) {
 */
-*/
+
   /* on dessine le perso _hero */
   /* on change la couleur */
   _sphere->dcolor = e; 
